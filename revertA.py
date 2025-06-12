@@ -297,7 +297,7 @@ class RevertA:
             returns_df = returns_df.dropna(subset=['return']).sort_values('return', ascending=False)
             returns_df['return_group'] = pd.qcut(returns_df['return'], q=10, labels=range(1, 11), duplicates='drop')
             returns_df['winner_loser'] = returns_df['return_group'].apply(
-                lambda x: 'winner' if x == 1 else ('loser' if x == 10 else None)
+                lambda x: 'loser' if x == 1 else ('winner' if x == 10 else None)
             )
         except Exception as e:
             print(f"收益率分组时出错: {str(e)}")
@@ -307,8 +307,8 @@ class RevertA:
         print("\n合并收益率和股息数据...")
         try:
             # 确保code列类型一致
-            returns_df['code'] = returns_df['code'].astype(str)
-            dividend_data['code'] = dividend_data['code'].astype(str)
+            returns_df['code'] = returns_df['code'].astype(str).str.strip().str.zfill(6)
+            dividend_data['code'] = dividend_data['code'].astype(str).str.strip().str.zfill(6)
             
             # 合并数据
             merged_df = pd.merge(returns_df, dividend_data, on='code', how='left')
@@ -383,8 +383,8 @@ class RevertA:
 
 
 if __name__ == "__main__":
-    start_date = '20230601'
-    end_date = '20250610'
+    start_date = '20230612'
+    end_date = '20250612'
     revertA = RevertA(start_date, end_date)
     df = revertA.analyze_strategy()
     print(df)
