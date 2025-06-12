@@ -341,12 +341,12 @@ class RevertA:
         # 4. 处理PE/PB分组
         print("\n开始处理PE/PB分组...")
         pe_df = dividend_data[['code', 'pe_ttm']].dropna()
-        pe_df['pe_group'] = pd.qcut(pe_df['pe_ttm'], q=[0, 0.4, 0.6, 1], 
+        pe_df['pe_group'] = pd.qcut(pe_df['pe_ttm'], q=[0, 0.3, 0.7, 1],
                                   labels=['low', 'medium', 'high'])
         pe_df['pe_tag'] = pe_df['pe_group'].apply(lambda x: 'pe_low' if x == 'low' else ('pe_high' if x == 'high' else 'medium'))
         
         pb_df = dividend_data[['code', 'pb']].dropna()
-        pb_df['pb_group'] = pd.qcut(pb_df['pb'], q=[0, 0.4, 0.6, 1], 
+        pb_df['pb_group'] = pd.qcut(pb_df['pb'], q=[0, 0.3, 0.7, 1],
                                   labels=['low', 'medium', 'high'])
         pb_df['pb_tag'] = pb_df['pb_group'].apply(lambda x: 'pb_low' if x == 'low' else ('pb_high' if x == 'high' else 'medium'))
         
@@ -356,7 +356,7 @@ class RevertA:
         
         # 按总市值分组
         merged_df['market_cap_group'] = pd.qcut(merged_df['total_mv'], 
-                                             q=[0, 0.4, 0.6, 1], 
+                                             q=[0, 0.3, 0.7, 1],
                                              labels=['small', 'medium', 'large'])
         
         return merged_df
