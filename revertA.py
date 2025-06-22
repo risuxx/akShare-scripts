@@ -249,7 +249,7 @@ class RevertA:
                 
             for symbol, stock in tqdm(stock_dict.items(), desc='获取财务指标'):
                 try:
-                    if stock.code.rjust(6, '0')[:3] != '300' and stock.code.rjust(6, '0')[:3] != '688' and 'ST' not in stock.name and '退' not in stock.name:
+                    if stock.code.rjust(6, '0')[:2] != '30' and stock.code.rjust(6, '0')[:3] != '688' and 'ST' not in stock.name and '退' not in stock.name:
                         indicator_df = ak.stock_a_indicator_lg(symbol=symbol)
                         stock.update_indicators(indicator_df)
                         print(f"处理股票: {stock.name}({stock.code}), 股息率: {stock.dv_ratio:.2f}%, PE(TTM): {stock.pe_ttm:.2f}, PB: {stock.pb:.2f}, 市值: {stock.total_mv/10000:.2f}亿")
