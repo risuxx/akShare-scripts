@@ -91,7 +91,8 @@ class RevertA:
             # 读取已存在的收益率数据
             if os.path.exists("returns_data.csv") and os.path.getsize("returns_data.csv") > 0:
                 try:
-                    existing_returns_data = pd.read_csv("returns_data.csv")
+                    existing_returns_data_original = pd.read_csv("returns_data.csv")
+                    existing_returns_data = existing_returns_data_original.drop_duplicates()
                     print(f"已加载 {len(existing_returns_data)} 条历史收益率数据")
                     
                     if not existing_returns_data.empty and 'code' in existing_returns_data.columns:
@@ -135,8 +136,8 @@ class RevertA:
                         print(f"警告: 股票 {symbol} 历史数据不足或为空，跳过")
                         continue
 
-                    if len(hist_data) < 300:
-                        print(f"警告: 股票 {symbol} 历史数据不足300天，跳过")
+                    if len(hist_data) < 400:
+                        print(f"警告: 股票 {symbol} 历史数据不足400天，跳过")
                         continue
 
                     start_price = hist_data.iloc[0]['收盘']
@@ -248,27 +249,28 @@ class RevertA:
                 
             for symbol, stock in tqdm(stock_dict.items(), desc='获取财务指标'):
                 try:
-                    indicator_df = ak.stock_a_indicator_lg(symbol=symbol)
-                    stock.update_indicators(indicator_df)
-                    print(f"处理股票: {stock.name}({stock.code}), 股息率: {stock.dv_ratio:.2f}%, PE(TTM): {stock.pe_ttm:.2f}, PB: {stock.pb:.2f}, 市值: {stock.total_mv/10000:.2f}亿")
-                    
-                    # 记录已处理的股票
-                    with open("processed_codes_revertA.txt", "a") as f:
-                        f.write(f"{symbol}\n")
+                    if stock.code.rjust(6, '0')[:3] != '300' and stock.code.rjust(6, '0')[:3] != '688' and 'ST' not in stock.name and '退' not in stock.name:
+                        indicator_df = ak.stock_a_indicator_lg(symbol=symbol)
+                        stock.update_indicators(indicator_df)
+                        print(f"处理股票: {stock.name}({stock.code}), 股息率: {stock.dv_ratio:.2f}%, PE(TTM): {stock.pe_ttm:.2f}, PB: {stock.pb:.2f}, 市值: {stock.total_mv/10000:.2f}亿")
+
+                        # 记录已处理的股票
+                        with open("processed_codes_revertA.txt", "a") as f:
+                            f.write(f"{symbol}\n")
                         
-                    if stock.dv_ratio > 0 and stock.pe_ttm > 0 and stock.code.rjust(6, '0')[:2] != '30' and 'ST' not in stock.name:
-                        dividend_stocks.append(stock)
-                        new_analysis_data.append({
-                            'code': stock.code,
-                            'name': stock.name,
-                            'dividend_yield': stock.dv_ratio,
-                            'pe_ttm': stock.pe_ttm,
-                            'pb': stock.pb,
-                            'total_mv': stock.total_mv
-                        })
-                        
-                    # 定期保存数据
-                    pd.DataFrame(new_analysis_data).to_csv("dividend_stocks_data.csv", index=False)
+                        if True:  # TODO: 添加条件判断
+                            dividend_stocks.append(stock)
+                            new_analysis_data.append({
+                                'code': stock.code,
+                                'name': stock.name,
+                                'dividend_yield': stock.dv_ratio,
+                                'pe_ttm': stock.pe_ttm,
+                                'pb': stock.pb,
+                                'total_mv': stock.total_mv
+                            })
+
+                        # 定期保存数据
+                        pd.DataFrame(new_analysis_data).to_csv("dividend_stocks_data.csv", index=False)
                         
                 except Exception as e:
                     print(f"Failed to get indicators for {symbol}: {str(e)}")
@@ -383,8 +385,8 @@ class RevertA:
 
 
 if __name__ == "__main__":
-    start_date = '20230612'
-    end_date = '20250612'
+    start_date = '20230620'
+    end_date = '20250620'
     revertA = RevertA(start_date, end_date)
     df = revertA.analyze_strategy()
     print(df)
